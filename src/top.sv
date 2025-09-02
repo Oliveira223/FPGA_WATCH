@@ -1,9 +1,9 @@
 module clock_top(
     input wire clock,
+    input wire reset_i,       // CPU RESET C12 - botão de reset da FPGA
     input wire config_i,      // BTNC - botão de configuração
     input wire increment_i,   // BTNU - botão de incremento
     input wire decrement_i,   // BTND - botão de decremento
-    input wire [15:0] SW,     // Switches (não usados)
     output wire [15:0] LED,   // LEDs mostram segundos em binário
     output wire [7:0] an,     // Anodos do display
     output wire [7:0] dec_ddp // Segmentos do display
@@ -24,20 +24,24 @@ module clock_top(
     // Sinais dos botões debounced
     wire btn_config_db, btn_inc_db, btn_dec_db;
     
-    // Reset automático na inicialização (não usa botão)
-    reg [3:0] reset_counter;
-    always @(posedge clock) begin
-        if (reset_counter < 4'hF) begin
-            reset_counter <= reset_counter + 1;
+    // Reset sincronizado usando o botão da FPGA
+    reg [2:0] reset_sync;
+    always @(posedge clock or negedge reset_i) begin
+        if (!reset_i) begin
+            reset_sync <= 3'b000;
+        end else begin
+            reset_sync <= {reset_sync[1:0], 1'b1};
         end
     end
-    assign reset = (reset_counter < 4'h8);  // Reset por alguns ciclos apenas
-    assign reset_n = ~reset;  // Reset ativo baixo para debounce
+    assign reset = ~reset_sync[2];  // Reset ativo alto para os módulos internos
+    assign reset_n = reset_sync[2]; // Reset ativo baixo para debounce
     
     // Reset para display (sempre baixo após inicialização)
     reg [3:0] display_reset_counter;
-    always @(posedge clock) begin
-        if (display_reset_counter < 4'hF) begin
+    always @(posedge clock or negedge reset_i) begin
+        if (!reset_i) begin
+            display_reset_counter <= 4'h0;
+        end else if (display_reset_counter < 4'hF) begin
             display_reset_counter <= display_reset_counter + 1;
         end
     end
@@ -97,9 +101,9 @@ module clock_top(
         .seconds_i(seconds),
         .minutes_i(minutes),
         .hours_i(hours),
-        .btn_config_i(btn_config_db),    // CORRIGIDO: usando sinal debounced
-        .btn_inc_i(btn_inc_db),          // CORRIGIDO: usando sinal debounced
-        .btn_dec_i(btn_dec_db),          // CORRIGIDO: usando sinal debounced
+        .btn_config_i(btn_config_db),    // Sinal debounced
+        .btn_inc_i(btn_inc_db),          // Sinal debounced
+        .btn_dec_i(btn_dec_db),          // Sinal debounced
         .count_enable_o(count_enable),
         .load_seconds_o(load_seconds),
         .load_minutes_o(load_minutes),
