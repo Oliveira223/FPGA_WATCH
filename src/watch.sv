@@ -22,6 +22,24 @@ module watch (
     output wire [5:0] d1, d2, d3, d4, d5, d6, d7, d8
 );
 
+    // Contador para piscar (adicionar após linha 26)
+reg [25:0] blink_counter;
+reg blink_signal;
+
+// Geração do sinal de piscar
+always @(posedge clk_100MHz_i) begin
+    if (reset_i) begin
+        blink_counter <= 26'b0;
+        blink_signal <= 1'b0;
+    end else begin
+        blink_counter <= blink_counter + 1;
+        if (blink_counter == 26'd50000000) begin // 0.5 segundos a 100MHz
+            blink_counter <= 26'b0;
+            blink_signal <= ~blink_signal;
+        end
+    end
+end
+
     typedef enum reg [2:0] {
         RUN = 3'b000,
         EDIT_HOURS = 3'b001,
@@ -170,14 +188,22 @@ module watch (
     assign seconds_tens = display_seconds / 10;
     assign seconds_units = display_seconds % 10;
     
+    // Mapeamento dos displays com piscar
+    wire hours_enable, minutes_enable, seconds_enable;
+    
+    // Controle de enable baseado no estado atual
+    assign hours_enable = (current_state == EDIT_HOURS) ? blink_signal : 1'b1;
+    assign minutes_enable = (current_state == EDIT_MIN) ? blink_signal : 1'b1;
+    assign seconds_enable = (current_state == EDIT_SEC) ? blink_signal : 1'b1;
+    
     // Mapeamento dos displays
-    assign d8 = {1'b1, hours_tens, 1'b1};      // Horas dezenas
-    assign d7 = {1'b1, hours_units, 1'b1};     // Horas unidades
-    assign d6 = {1'b0, 4'b0000, 1'b1};         // Vazio (espaço)
-    assign d5 = {1'b1, minutes_tens, 1'b1};    // Minutos dezenas
-    assign d4 = {1'b1, minutes_units, 1'b1};   // Minutos unidades
-    assign d3 = {1'b0, 4'b0000, 1'b1};         // Vazio (espaço)
-    assign d2 = {1'b1, seconds_tens, 1'b1};    // Segundos dezenas
-    assign d1 = {1'b1, seconds_units, 1'b1};   // Segundos unidades
+    assign d8 = {hours_enable, hours_tens, 1'b1};      // Horas dezenas
+    assign d7 = {hours_enable, hours_units, 1'b1};     // Horas unidades
+    assign d6 = {1'b0, 4'b0000, 1'b1};                 // Vazio (espaço)
+    assign d5 = {minutes_enable, minutes_tens, 1'b1};  // Minutos dezenas
+    assign d4 = {minutes_enable, minutes_units, 1'b1}; // Minutos unidades
+    assign d3 = {1'b0, 4'b0000, 1'b1};                 // Vazio (espaço)
+    assign d2 = {seconds_enable, seconds_tens, 1'b1};  // Segundos dezenas
+    assign d1 = {seconds_enable, seconds_units, 1'b1}; // Segundos unidades
     
 endmodule

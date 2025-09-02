@@ -11,7 +11,7 @@ module clock_top(
 
     // Sinais internos
     wire reset;
-    wire reset_n;  // Reset ativo baixo para debounce
+    wire reset_n;        // Reset ativo baixo para debounce
     wire display_reset;  // Reset separado para o display
     wire seconds_pulse;
     wire count_enable;
