@@ -2,7 +2,7 @@ module counter (
     input  wire clk_100MHz_i,
     input  wire reset_i,           
     input  wire seconds_pulse_i,
-    input  wire count_enable_i,
+    input  wire count_enable_i,         // Pode contar
 
     // Valores para carregar (do watch)
     input  wire [5:0] load_seconds_i,  
