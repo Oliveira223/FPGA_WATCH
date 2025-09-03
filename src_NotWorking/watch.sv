@@ -3,7 +3,8 @@ module watch (
     input  wire reset_i,
 
     // Vem do counter
-    input  wire [5:0] seconds_i,
+    // input  wire [5:0] seconds_i,
+    input  wire [6:0] seconds_i,
     input  wire [5:0] minutes_i,
     input  wire [4:0] hours_i,
 
@@ -14,7 +15,8 @@ module watch (
     
     // VOlta para o counter
     output wire count_enable_o,
-    output wire [5:0] load_seconds_o,
+   // output wire [5:0] load_seconds_o,
+    output wire [6:0] load_seconds_o,
     output wire [5:0] load_minutes_o,
     output wire [4:0] load_hours_o,
     output wire load_time_o,
@@ -79,7 +81,8 @@ module watch (
     state_t current_state, next_state;
     
     // Novos valores para o horário
-    reg [5:0] edit_seconds;
+    // reg [5:0] edit_seconds;
+    reg [6:0] edit_seconds;
     reg [5:0] edit_minutes;
     reg [4:0] edit_hours;
     
@@ -132,13 +135,15 @@ module watch (
                 
                 EDIT_SEC: begin
                     if (btn_inc_edge) begin
-                        if (edit_seconds == 59)
+                        // if (edit_seconds == 59)
+                        if (edit_seconds == 95)
                             edit_seconds <= 0;
                         else
                             edit_seconds <= edit_seconds + 1;
                     end else if (btn_dec_edge) begin
                         if (edit_seconds == 0)
-                            edit_seconds <= 59;
+                            // edit_seconds <= 59;
+                            edit_seconds <= 95;
                         else
                             edit_seconds <= edit_seconds - 1;
                     end
@@ -170,7 +175,9 @@ module watch (
     assign load_time_o = (current_state == EDIT_SEC && btn_config_edge);
     
     // Lógica de display
-    reg [5:0] display_seconds, display_minutes;
+    // reg [5:0] display_seconds,
+    reg [6:0] display_seconds;
+    reg [5:0] display_minutes;
     reg [4:0] display_hours;
     
     // Exibe o horário estático se estiver no modo edição

@@ -7,7 +7,7 @@ module clock_top(
     input wire config_i,      // BTNC - configuração
     input wire increment_i,   // BTNU - incremento
     input wire decrement_i,   // BTND - decremento
-    output wire [15:0] LED,   // LEDs mostram segundos em binário (6 bits -> 59s)
+    output wire [15:0] LED,   // LEDs mostram segundos em binário (6 bits -> 59s).
     output wire [7:0] an,     // Anodos do display
     output wire [7:0] dec_ddp // Segmentos do display
 );
@@ -18,7 +18,8 @@ module clock_top(
     wire display_reset;  // Reset separado para o display
     wire seconds_pulse;
     wire count_enable;
-    wire [5:0] seconds, load_seconds;
+    // wire [5:0] seconds, load_seconds;
+    wire [6:0] seconds, load_seconds;
     wire [5:0] minutes, load_minutes;
     wire [4:0] hours, load_hours;
     wire load_time;      // 0 -> conta; 1 -> Carrega valores do usuário
@@ -51,30 +52,31 @@ module clock_top(
     assign display_reset = (display_reset_counter < 4'h4);  // Reset por alguns ciclos apenas
     
     // LEDs mostram os segundos em binário
-    assign LED = {10'b0, seconds};
+   // assign LED = {10'b0, seconds};
     
-    // DESCOMENTAR AQUI PARA O DEBOUNDE VOLTAR A FUNCIONAR =======================
+    // DESCOMENTAR AQUI PARA O DEBOUNDE VOLTAR A FUNCIONAR =====================
     // Instâncias dos módulos debounce (3 botões)
-    // debounce #(.DELAY(500_000)) deb_config (
-    //     .clk_i(clock),
-    //     .rstn_i(reset_n),
-    //     .key_i(config_i),
-    //     .debkey_o(btn_config_db)
-    // );
+    debounce #(.DELAY(500_000)) deb_config (
+        .clk_i(clock),
+        .rstn_i(reset_n),
+        .key_i(config_i),
+        .debkey_o(btn_config_db)
+    );
     
-    // debounce #(.DELAY(500_000)) deb_inc (
-    //     .clk_i(clock),
-    //     .rstn_i(reset_n),
-    //     .key_i(increment_i),
-    //     .debkey_o(btn_inc_db)
-    // );
+    debounce #(.DELAY(500_000)) deb_inc (
+        .clk_i(clock),
+        .rstn_i(reset_n),
+        .key_i(increment_i),
+        .debkey_o(btn_inc_db)
+    );
     
-    // debounce #(.DELAY(500_000)) deb_dec (
-    //     .clk_i(clock),
-    //     .rstn_i(reset_n),
-    //     .key_i(decrement_i),
-    //     .debkey_o(btn_dec_db)
-    // );
+    debounce #(.DELAY(500_000)) deb_dec (
+        .clk_i(clock),
+        .rstn_i(reset_n),
+        .key_i(decrement_i),
+        .debkey_o(btn_dec_db)
+    );
+    // ====================================================
     
     // Instância do divisor de clock (gera pulso de 1 segundo)
     clock_divisor clk_div (
@@ -109,9 +111,14 @@ module clock_top(
         .hours_i(hours),
 
         // Botões
-        .btn_config_i(config_i),    
-        .btn_inc_i(increment_i),          
-        .btn_dec_i(decrement_i),  
+        // .btn_config_i(config_i),    
+        // .btn_inc_i(increment_i),          
+        // .btn_dec_i(decrement_i),  
+
+          // Botões - use os debounced!
+        .btn_config_i(btn_config_db),
+        .btn_inc_i(btn_inc_db),
+        .btn_dec_i(btn_dec_db),
 
         // Edição
         .count_enable_o(count_enable),

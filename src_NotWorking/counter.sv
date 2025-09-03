@@ -5,12 +5,14 @@ module counter (
     input  wire count_enable_i,         // Pode contar
 
     // Valores para carregar (do watch)
-    input  wire [5:0] load_seconds_i,  
+    //input  wire [5:0] load_seconds_i,
+    input  wire [6:0] load_seconds_i,  
     input  wire [5:0] load_minutes_i,
     input  wire [4:0] load_hours_i,   
     input  wire load_time_i,
     
-    output reg [5:0] seconds_o,   // 0-59
+    // output reg [5:0] seconds_o,   // 0-59
+    output reg [6:0] seconds_o,   // 0-97 -> PARA ERRO
     output reg [5:0] minutes_o,   // 0-59
     output reg [4:0] hours_o      // 0-23
 );
@@ -29,7 +31,8 @@ module counter (
             end
             // Conta apenas se habilitado
             else if (count_enable_i && seconds_pulse_i) begin
-                if (seconds_o == 59) begin
+              //if (seconds_0 == 59) begin
+                if (seconds_o == 95) begin
                     seconds_o <= 0;
                     if (minutes_o == 59) begin
                         minutes_o <= 0;
