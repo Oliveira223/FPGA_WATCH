@@ -200,9 +200,9 @@ module watch (
     
     // Controle de enable baseado no estado atual
     assign hours_enable = (current_state == EDIT_HOURS) ? blink_signal : 1'b1; 
-    //                                ↑ condição          ↑ se verdade   ↑ se falso
     assign minutes_enable = (current_state == EDIT_MIN) ? blink_signal : 1'b1;
     assign seconds_enable = (current_state == EDIT_SEC) ? blink_signal : 1'b1;
+    //                                ↑ condição          ↑ se verdade   ↑ se falso
     
     // Mapeamento dos displays
     assign d8 = {hours_enable, hours_tens, 1'b1};      // Horas dezenas
